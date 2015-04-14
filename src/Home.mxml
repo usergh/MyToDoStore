@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<!--
+  Created by wangjunhao on 2015/4/11.
+-->
+<View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns="library://ns.adobe.com/flex/spark" creationComplete="creationCompleteHandler(event)">
+
+    <VGroup width="100%">
+        <List id="list1" dataProvider="{list}" width="100%"
+                itemRenderer="ren.Checklistren" click="list1_clickHandler(event)">
+
+        </List>
+        <HGroup>
+            <Button id="btnAdd" label="添加" click="BtnAdd(event)"></Button>
+            <Button id="btnEdit" label="修改或删除" click="BtnEdit(event)"></Button>
+        </HGroup>
+        <!--<Label id="lbl" text="ssssss"></Label>-->
+        <!--<Button id="myBtn" label="open menu" click="btnClick(event)"></Button>-->
+
+    </VGroup>
+
+    <fx:Script><![CDATA[
+        import mx.collections.ArrayCollection;
+        import mx.core.FlexGlobals;
+        import mx.events.FlexEvent;
+
+        import mx.rpc.events.ResultEvent;
+        import mx.rpc.soap.mxml.WebService;
+
+        import spark.components.Alert;
+
+        [Bindable] var list:ArrayCollection = new ArrayCollection();
+
+        var tid:int;
+        var currentItem:Object;
+
+        private function creationCompleteHandler(event:FlexEvent):void {
+            //连接后台并查询
+            var ws:WebService = new WebService();
+            ws.wsdl = "http://localhost:22901/Service1.asmx?wsdl";
+            ws.addEventListener(ResultEvent.RESULT, resultFunction2);//增加返回结果的监听
+            ws.getOperation("GetQuery").send();         //调用webservice的方法，send参数。单引号与双引号在ActionScript中应该都一样。
+            ws.loadWSDL();
+
+        }
+
+        private function BtnAdd(event:MouseEvent):void {
+            navigator.pushView(Add, null);
+        }
+
+        private function BtnEdit(event:MouseEvent):void {
+            if (currentItem == null) {
+                Alert.show("请先选择需要修改的待办事务！");
+                return;
+            }
+            navigator.pushView(Edit, currentItem);
+        }
+
+        //        private function BtnDelete(event:MouseEvent):void {
+        //            navigator.pushView(Delete, tid);
+        //        }
+
+        private function BtnOK(event:MouseEvent):void {
+            //连接后台并插入
+            var ws:WebService = new WebService();
+            ws.wsdl = "http://localhost:22901/Service1.asmx?wsdl";
+            ws.addEventListener(ResultEvent.RESULT, resultFunction);//增加返回结果的监听
+            ws.getOperation("GetQuery").send();         //调用webservice的方法，send参数。单引号与双引号在ActionScript中应该都一样。
+            ws.loadWSDL();
+            //返回
+            navigator.popView();
+        }
+
+        private function resultFunction(event:ResultEvent):void {
+        }
+
+        private function resultFunction2(event:ResultEvent):void {
+            var str:String = event.result as String;
+            list = new ArrayCollection(JSON.parse(str) as Array);
+            //Alert.show(list);
+            //trace(list)
+
+        }
+
+
+        private function btnClick(e:*):void {
+            FlexGlobals.topLevelApplication.viewMenuOpen = true;
+        }
+
+
+        private function list1_clickHandler(event:MouseEvent):void {
+            if (list1.selectedItem == null) {
+                Alert.show("请先选择事项！");
+                return;
+            }
+            currentItem = list1.selectedItem;
+
+            tid = currentItem["tid"] as int;
+
+
+        }
+        ]]></fx:Script>
+</View>

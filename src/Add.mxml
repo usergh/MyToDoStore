@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--
+  Created by wangjunhao on 2015/4/11.
+-->
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark">
+    <s:VGroup>
+        <s:HGroup><s:Label text="内容："></s:Label><s:TextArea id="txtContent" height="100" ></s:TextArea></s:HGroup>
+        <s:Button label="确定" click="BtnOK(event)"></s:Button>
+    </s:VGroup>
+
+    <fx:Script><![CDATA[
+        import mx.rpc.events.ResultEvent;
+        import mx.rpc.soap.mxml.WebService;
+
+        import spark.components.Alert;
+
+        private function BtnOK(event:MouseEvent):void {
+            //连接后台并插入
+            var ws:WebService = new WebService();
+            ws.wsdl = "http://localhost:22901/Service1.asmx?wsdl";
+            ws.addEventListener(ResultEvent.RESULT, resultFunction);//增加返回结果的监听
+            ws.getOperation("Insert").send(txtContent.text);         //调用webservice的方法，send参数。单引号与双引号在ActionScript中应该都一样。
+            ws.loadWSDL();
+            //返回
+            navigator.popView();
+        }
+
+        private function resultFunction(event:ResultEvent):void {
+            var s:String=event.result as String;
+
+
+        }
+        ]]></fx:Script>
+</s:View>
